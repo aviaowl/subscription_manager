@@ -47,12 +47,12 @@ def test_subscription_str(subscription):
                           (today - relativedelta(weeks=1, days=1), 'weekly', today + relativedelta(weeks=1, days=-1)),
                           (today - relativedelta(months=1, days=1), 'monthly', today + relativedelta(months=1, days=-1)),
                           (today - relativedelta(years=1, days=1), 'yearly', today + relativedelta(years=1, days=-1))])
-def test_get_next_payment_date_positive(subscription, start_date, frequency, expected):
+def test_get_next_payment_date(subscription, start_date, frequency, expected):
     """Check that get next payment date works correctly"""
     assert subscription.get_next_payment_date(start_date, frequency) == expected
 
 
-def test_get_next_payment_date_negative(subscription):
+def test_get_next_payment_date_wrong_frequency(subscription):
     """Test that error occurs in case of calling get next payment date with wrong frequency"""
     with pytest.raises(WrongFrequency) as err:
         subscription.get_next_payment_date(today, 'blahblah')
