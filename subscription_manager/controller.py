@@ -1,4 +1,4 @@
-from subscription_manager.DBHelper import DBHelper
+from subscription_manager.dbhelper import DBHelper
 import subscription_manager.utils as utils
 from typing import List
 
