@@ -1,5 +1,6 @@
 from subscription_manager.dbhelper import DBHelper
 import subscription_manager.utils as utils
+from subscription_manager.utils import SubsNotFoundException, InvalidSubsFieldException
 from typing import List
 
 
@@ -27,10 +28,13 @@ class Controller:
         Returns:
             id (int): id of created subscription
         """
-        pass
+        if not utils.validate_subscription(subscription):
+            return
+        result_id = self.dbhelper.add_subscription(subscription)
+        return result_id
 
     def edit_subscription(
-        self, subscription_id: int, subscription_changes: dict
+            self, subscription_id: int, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
@@ -89,9 +93,3 @@ class Controller:
             List[dict]:
         """
         pass
-
-
-class SubsNotFoundException(Exception):
-    """Raises when the input subscription was not found"""
-
-    pass

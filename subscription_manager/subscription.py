@@ -3,7 +3,6 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import DAILY, WEEKLY, MONTHLY, YEARLY, rrule
 
-
 @dataclass
 class Subscription:
     """Data class for Subscription representation
@@ -43,7 +42,7 @@ class Subscription:
                 pay_day (datetime): date of the next payment. Example: 'datetime(2020, 06, 18)'
         """
         if frequency.lower() not in ('daily', 'weekly', 'monthly', 'yearly'):
-            raise WrongFrequency(
+            raise ValueError(
                 'Unable to parse frequency: expected format examples: daily, weekly, monthly, yearly')
         today = datetime.today().date()
         # dict contains sequence of dates since start_date until today+selected period.
@@ -60,6 +59,3 @@ class Subscription:
             return periods[frequency][-1].date()
 
 
-class WrongFrequency(Exception):
-    """Raised when the input value is too small"""
-    pass
