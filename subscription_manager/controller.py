@@ -1,6 +1,6 @@
 import subscription_manager.utils as utils
 from subscription_manager.dbhelper import DBHelper
-from subscription_manager.subscription import Subscription
+from subscription_manager.utils import SubscriptionException
 from typing import List
 
 
@@ -26,18 +26,14 @@ class Controller:
              "currency": 'GBP',
              "comment": 'Prime membership for faster delivery'}
         Returns:
-            int: id of created subscription
+            int: identifier of created subscription
         """
-        if utils.validate_subscription(subscription_dict):
-            subscription_obj = Subscription(owner=subscription_dict['owner'],
-                                            name=subscription_dict['name'],
-                                            frequency=subscription_dict['frequency'],
-                                            start_date=subscription_dict['start_date'],
-                                            price=subscription_dict['price'],
-                                            currency=subscription_dict['currency'],
-                                            comment=subscription_dict['comment'])
-            result_id = self.dbhelper.add_subscription(subscription_dict)
-            return result_id, subscription_obj
+        try:
+            subscription_obj = utils.create_subscription(**subscription_dict)
+        except SubscriptionException as exc:
+            raise exc
+        result_id = self.dbhelper.add_subscription(subscription_obj)
+        return result_id
 
     def edit_subscription(
             self, subscription_id: int, subscription_changes: dict

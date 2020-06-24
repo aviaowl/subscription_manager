@@ -52,9 +52,8 @@ def test_subscription_str(subscription):
 @pytest.mark.parametrize("start_date, frequency, expected",
                          [(date(2020, 1, 1), 'daily', today),
                           (today - relativedelta(weeks=1, days=1), 'weekly', today + relativedelta(weeks=1, days=-1)),
-                          (
-                                  today - relativedelta(months=1, days=1), 'monthly',
-                                  today + relativedelta(months=1, days=-1)),
+                          (today - relativedelta(months=1, days=1), 'monthly',
+                           today + relativedelta(months=1, days=-1)),
                           (today - relativedelta(years=1, days=1), 'yearly', today + relativedelta(years=1, days=-1))])
 def test_get_next_payment_date(generated_subscription, start_date, frequency, expected):
     """Check that get next payment date works correctly"""

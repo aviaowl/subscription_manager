@@ -1,14 +1,18 @@
-class MissingFieldsException(Exception):
+class SubscriptionException(Exception):
+    """Parent exception for Subscription creation"""
+
+
+class MissingFieldsException(SubscriptionException):
     """Raises when some fields in subscription are missed"""
 
 
-class WrongFrequencyException(Exception):
-    """Raised when the input value is too small"""
+class InvalidValueException(SubscriptionException):
+    """Raises when taken subscription fields are invalid"""
+
+
+class WrongTypeException(SubscriptionException):
+    """Raises when wrong type of fields was found"""
 
 
 class SubsNotFoundException(Exception):
     """Raises when the input subscription was not found"""
-
-
-class InvalidSubsFieldException(Exception):
-    """Raises when taken subscription is invalid"""

@@ -1,27 +1,9 @@
 from dataclasses import fields
-from typing import Tuple
 from random import choice, uniform, randint
 from datetime import datetime, date
 from subscription_manager.exceptions import *
 from subscription_manager.subscription import Subscription
-
-
-def _get_currencies_list() -> Tuple[str]:
-    """
-    Return list of supported currencies.
-    Returns:
-        tuple: list of supported currencies
-    """
-    return 'USD', 'GBP', 'EUR', 'RUB', 'CNY'
-
-
-def _get_frequencies_list() -> Tuple[str]:
-    """
-    Return list of supported frequencies.
-    Returns:
-        tuple: list of supported currencies
-    """
-    return 'daily', 'weekly', 'monthly', 'yearly'
+import subscription_manager.const as const
 
 
 def subscription_generator() -> dict:
@@ -31,8 +13,6 @@ def subscription_generator() -> dict:
         subscription (dict): generated subscription
     """
     names = ['Mary', 'Eva', 'Nancy', 'Ann', 'Kevin', 'John', 'Ben', 'Robin']
-    currencies = _get_currencies_list()
-    frequencies = _get_frequencies_list()
     subscription_names = ['Google music', 'Spotify', 'Apple Music', 'Youtube Music', 'Coursera', 'Pluralsight',
                           'Amazon Prime', 'Netflix', 'Sky Store', 'Pet insurance', 'Mobile payment']
     # generate random day from the beginning of the current year to today
@@ -42,25 +22,25 @@ def subscription_generator() -> dict:
 
     return dict(owner=choice(names),
                 name=choice(subscription_names),
-                frequency=choice(frequencies),
+                frequency=choice(const.FREQUENCIES),
                 start_date=random_day,
                 price=round(uniform(1.99, 49.99), 2),
-                currency=choice(currencies),
+                currency=choice(const.CURRENCIES),
                 comment="Generation date: " + datetime.today().strftime("%d/%m/%Y, %H:%M:%S")
                 )
 
 
-def validate_subscription(subscription: dict) -> bool:
+def create_subscription(**subscription) -> Subscription:
     """
-    Take subscription and validate its every field
+    Take subscription, validate its every field and return Subscription object
     Args:
-        subscription (dict): subscription to validate
+        subscription (dict): subscription to create
     Returns:
-        True: in case of valid subscription
-        False: in case of invalid subscription
+        class <Subscription>: subscription object in case of valid input
     Raises:
         MissingFieldsException: If some of mandatory fields is missing
-        WrongCurrencyException: If input currency is not supported
+        InvalidValueException: If some of taken fields have invalid values
+        WrongTypeException: If some of taken fields have wrong types
     """
     # Check that there is no missed fields in the subscription
     expected_fields = {field.name: field.type for field in fields(Subscription)}
@@ -70,22 +50,20 @@ def validate_subscription(subscription: dict) -> bool:
     # Check that types of all fields are correct
     for key, value in subscription.items():
         if type(value) != expected_fields[key]:
-            raise InvalidSubsFieldException(
-                f"Found wrong field type, expected:{expected_fields[key]}, received:{type(value), value}")
+            raise WrongTypeException(
+                f"Found wrong field '{key}' type, expected:{expected_fields[key]}, received:{type(value), value}")
 
     # Check that given subscription currency is supported
-    supported_currencies = _get_currencies_list()
-    if subscription['currency'] not in supported_currencies:
-        raise InvalidSubsFieldException(f"Unexpected currency: {subscription['frequency']}, supported currencies: ",
-                                        " ".join(supported_currencies))
+    if subscription['currency'] not in const.CURRENCIES:
+        raise InvalidValueException(f"Unexpected currency: {subscription['frequency']}, supported currencies: ",
+                                    " ".join(const.CURRENCIES))
 
     # Check that given subscription frequency is supported
-    supported_frequencies = _get_frequencies_list()
-    if subscription['frequency'] not in supported_frequencies:
-        raise InvalidSubsFieldException(f"Unexpected frequency: {subscription['frequency']}, supported frequencies: ",
-                                        " ".join(supported_frequencies))
+    if subscription['frequency'] not in const.FREQUENCIES:
+        raise InvalidValueException(f"Unexpected frequency: {subscription['frequency']}, supported frequencies: ",
+                                    " ".join(const.FREQUENCIES))
 
     # Check that start_date is less than today
     if subscription['start_date'] > date.today():
-        raise InvalidSubsFieldException("Start dates in the future are not supported")
-    return True
+        raise InvalidValueException("Start dates in the future are not supported")
+    return Subscription(**subscription)
