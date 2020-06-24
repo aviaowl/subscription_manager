@@ -1,6 +1,6 @@
-from subscription_manager.dbhelper import DBHelper
 import subscription_manager.utils as utils
-from subscription_manager.utils import SubsNotFoundException, InvalidSubsFieldException
+from subscription_manager.dbhelper import DBHelper
+from subscription_manager.subscription import Subscription
 from typing import List
 
 
@@ -11,12 +11,12 @@ class Controller:
         """Takes DBHelper instance for communicating with database"""
         self.dbhelper = dbhelper
 
-    def add_subscription(self, subscription: dict) -> int:
+    def add_subscription(self, subscription_dict: dict) -> int:
         """
         Add subscription to database.
         Validates subscription, creates instance of Subscription class and send it to DBHelper
         Args:
-            subscription (dict):
+            subscription_dict (dict): subscription to add
         Examples:
             {"owner": 'Lena',
              "name": 'Amazon Prime',
@@ -26,12 +26,18 @@ class Controller:
              "currency": 'GBP',
              "comment": 'Prime membership for faster delivery'}
         Returns:
-            id (int): id of created subscription
+            int: id of created subscription
         """
-        if not utils.validate_subscription(subscription):
-            return
-        result_id = self.dbhelper.add_subscription(subscription)
-        return result_id
+        if utils.validate_subscription(subscription_dict):
+            subscription_obj = Subscription(owner=subscription_dict['owner'],
+                                            name=subscription_dict['name'],
+                                            frequency=subscription_dict['frequency'],
+                                            start_date=subscription_dict['start_date'],
+                                            price=subscription_dict['price'],
+                                            currency=subscription_dict['currency'],
+                                            comment=subscription_dict['comment'])
+            result_id = self.dbhelper.add_subscription(subscription_dict)
+            return result_id, subscription_obj
 
     def edit_subscription(
             self, subscription_id: int, subscription_changes: dict

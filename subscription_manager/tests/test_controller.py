@@ -1,4 +1,5 @@
 import pytest
+from subscription_manager.exceptions import InvalidSubsFieldException, MissingFieldsException
 import subscription_manager.utils as utils
 from dateutil.relativedelta import relativedelta
 from subscription_manager.controller import Controller
@@ -6,7 +7,6 @@ from subscription_manager.subscription import Subscription
 from subscription_manager.dbhelper import DBHelper
 from bson.objectid import ObjectId
 from unittest.mock import MagicMock
-from subscription_manager.utils import InvalidSubsFieldException, MissingFieldsException
 from datetime import datetime
 
 
@@ -31,17 +31,12 @@ def controller(mock_dbhelper) -> Controller:
     return Controller(database)
 
 
-@pytest.fixture
-def subscription(subs_dict: dict) -> Subscription:
-    """Returns Subscription class instance"""
-    return Subscription(**subs_dict)
-
-
 @pytest.mark.parametrize("subscription_dict", [utils.subscription_generator() for _ in range(5)])
 def test_add_subscription(subscription_dict, controller):
     """Check successful subscription addition with correct parameters"""
     result = controller.add_subscription(subscription_dict)
-    assert type(result) == ObjectId
+    assert type(result[0]) == ObjectId
+    assert type(result[1] == Subscription)
 
 
 @pytest.mark.parametrize("paramNone", ['owner', 'name', 'frequency', 'start_date', 'price', 'currency', 'comment'])
