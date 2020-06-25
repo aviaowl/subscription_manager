@@ -1,5 +1,6 @@
-from subscription_manager.dbhelper import DBHelper
 import subscription_manager.utils as utils
+from subscription_manager.dbhelper import DBHelper
+from subscription_manager.utils import SubscriptionException
 from typing import List
 
 
@@ -10,12 +11,12 @@ class Controller:
         """Takes DBHelper instance for communicating with database"""
         self.dbhelper = dbhelper
 
-    def add_subscription(self, subscription: dict) -> int:
+    def add_subscription(self, subscription_dict: dict) -> int:
         """
         Add subscription to database.
         Validates subscription, creates instance of Subscription class and send it to DBHelper
         Args:
-            subscription (dict):
+            subscription_dict (dict): subscription to add
         Examples:
             {"owner": 'Lena',
              "name": 'Amazon Prime',
@@ -25,12 +26,17 @@ class Controller:
              "currency": 'GBP',
              "comment": 'Prime membership for faster delivery'}
         Returns:
-            id (int): id of created subscription
+            int: identifier of created subscription
         """
-        pass
+        try:
+            subscription_obj = utils.create_subscription(**subscription_dict)
+        except SubscriptionException as exc:
+            raise exc
+        result_id = self.dbhelper.add_subscription(subscription_obj)
+        return result_id
 
     def edit_subscription(
-        self, subscription_id: int, subscription_changes: dict
+            self, subscription_id: int, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
@@ -89,9 +95,3 @@ class Controller:
             List[dict]:
         """
         pass
-
-
-class SubsNotFoundException(Exception):
-    """Raises when the input subscription was not found"""
-
-    pass
