@@ -13,7 +13,7 @@ class Subscription:
             frequency (str): payment period for subscription from the list: daily, weekly, monthly, yearly
             start_date (date): date when subscription started
             price (str): amount of money needed to pay for subscription per one payment period
-            currency (str): currency of payment, default GBP
+            currency (str): currency of payment
             comment (str): not-mandatory comment for subscription
         Methods:
             get_next_payment_date (datetime): returns next payment date for the subscription
