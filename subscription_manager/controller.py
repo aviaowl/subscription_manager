@@ -1,6 +1,11 @@
 import subscription_manager.utils as utils
 from subscription_manager.dbhelper import DBHelper
+from subscription_manager.subscription import Subscription
 from subscription_manager.utils import SubscriptionException
+from subscription_manager.exceptions import (
+    WrongTypeException,
+    InvalidValueException,
+)
 from typing import List
 
 
@@ -36,7 +41,7 @@ class Controller:
         return result_id
 
     def edit_subscription(
-            self, subscription_id: int, subscription_changes: dict
+        self, subscription_id: int, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
@@ -64,34 +69,35 @@ class Controller:
         """
         pass
 
-    def get_subscription_by_id(self, subscription_id: int) -> dict:
+    def get_subscription_by_name(self, subscription_name: str) -> Subscription:
         """
-        Return subscription by identifier
+        Return subscription by name
         Returns:
-            dict: found subscription in dict representation
+            <class Subscription>: found subscription like Subscription object
         Raises:
             SubsNotFoundException: when subscription with this id doesn't exist in database
         """
-        pass
+        if type(subscription_name) is not str:
+            raise WrongTypeException(
+                f"Found wrong field 'subscription_name' type, expected:<str>, received:{type(subscription_name), subscription_name}"
+            )
+        if len(subscription_name) < 1:
+            raise InvalidValueException(
+                "Subscription name length should be more than one"
+            )
+        recieved_subscription: dict = self.dbhelper.get_subscription(subscription_name)
+        recieved_subscription.pop("_id")
+        new_date_type = {"start_date": recieved_subscription["start_date"].date()}
+        recieved_subscription.update(new_date_type)
+        return Subscription(**recieved_subscription)
 
-    def _get_subscription_id(self, subscription_name: str) -> int:
-        """
-        Search subscription by its name and return its identifier
-        Args:
-            subscription_name (str): name of subscription to search
-        Returns:
-            int: identifier of found subscription
-        Raises:
-            SubsNotFoundException: when subscription was not found in database
-        """
-        pass
 
-    def get_subscriptions_list(self, owner=None) -> List[dict]:
-        """
-        Return list of subscriptions
-        Args:
-            owner (str): not mandatory, if not None returns all subscriptions of specified owner
-        Returns:
-            List[dict]:
-        """
-        pass
+def get_subscriptions_list(self, owner=None) -> List[dict]:
+    """
+    Return list of subscriptions
+    Args:
+        owner (str): not mandatory, if not None returns all subscriptions of specified owner
+    Returns:
+        List[dict]:
+    """
+    pass

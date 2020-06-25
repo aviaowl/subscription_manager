@@ -12,22 +12,34 @@ def subscription_generator() -> dict:
     Returns:
         subscription (dict): generated subscription
     """
-    names = ['Mary', 'Eva', 'Nancy', 'Ann', 'Kevin', 'John', 'Ben', 'Robin']
-    subscription_names = ['Google music', 'Spotify', 'Apple Music', 'Youtube Music', 'Coursera', 'Pluralsight',
-                          'Amazon Prime', 'Netflix', 'Sky Store', 'Pet insurance', 'Mobile payment']
+    names = ["Mary", "Eva", "Nancy", "Ann", "Kevin", "John", "Ben", "Robin"]
+    subscription_names = [
+        "Google music",
+        "Spotify",
+        "Apple Music",
+        "Youtube Music",
+        "Coursera",
+        "Pluralsight",
+        "Amazon Prime",
+        "Netflix",
+        "Sky Store",
+        "Pet insurance",
+        "Mobile payment",
+    ]
     # generate random day from the beginning of the current year to today
     start_dt = date.today().replace(day=1, month=1).toordinal()
     end_dt = date.today().toordinal()
     random_day = date.fromordinal(randint(start_dt, end_dt))
 
-    return dict(owner=choice(names),
-                name=choice(subscription_names),
-                frequency=choice(const.FREQUENCIES),
-                start_date=random_day,
-                price=round(uniform(1.99, 49.99), 2),
-                currency=choice(const.CURRENCIES),
-                comment="Generation date: " + datetime.today().strftime("%d/%m/%Y, %H:%M:%S")
-                )
+    return dict(
+        owner=choice(names),
+        name=choice(subscription_names),
+        frequency=choice(const.FREQUENCIES),
+        start_date=random_day,
+        price=round(uniform(1.99, 49.99), 2),
+        currency=choice(const.CURRENCIES),
+        comment="Generation date: " + datetime.today().strftime("%d/%m/%Y, %H:%M:%S"),
+    )
 
 
 def create_subscription(**params) -> Subscription:
@@ -53,25 +65,32 @@ def create_subscription(**params) -> Subscription:
     # Check that there is no missed fields in the subscription
     expected_fields = {field.name: field.type for field in fields(Subscription)}
     if params.keys() != expected_fields.keys():
-        raise MissingFieldsException("Some fields in the taken subscription are missing")
+        raise MissingFieldsException(
+            "Some fields in the taken subscription are missing"
+        )
 
     # Check that types of all fields are correct
     for key, value in params.items():
         if type(value) != expected_fields[key]:
             raise WrongTypeException(
-                f"Found wrong field '{key}' type, expected:{expected_fields[key]}, received:{type(value), value}")
+                f"Found wrong field '{key}' type, expected:{expected_fields[key]}, received:{type(value), value}"
+            )
 
     # Check that given subscription currency is supported
-    if params['currency'] not in const.CURRENCIES:
-        raise InvalidValueException(f"Unexpected currency: {params['frequency']}, supported currencies: ",
-                                    " ".join(const.CURRENCIES))
+    if params["currency"] not in const.CURRENCIES:
+        raise InvalidValueException(
+            f"Unexpected currency: {params['frequency']}, supported currencies: ",
+            " ".join(const.CURRENCIES),
+        )
 
     # Check that given subscription frequency is supported
-    if params['frequency'] not in const.FREQUENCIES:
-        raise InvalidValueException(f"Unexpected frequency: {params['frequency']}, supported frequencies: ",
-                                    " ".join(const.FREQUENCIES))
+    if params["frequency"] not in const.FREQUENCIES:
+        raise InvalidValueException(
+            f"Unexpected frequency: {params['frequency']}, supported frequencies: ",
+            " ".join(const.FREQUENCIES),
+        )
 
     # Check that start_date is less than today
-    if params['start_date'] > date.today():
+    if params["start_date"] > date.today():
         raise InvalidValueException("Start dates in the future are not supported")
     return Subscription(**params)

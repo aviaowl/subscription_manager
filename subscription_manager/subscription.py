@@ -18,6 +18,7 @@ class Subscription:
         Methods:
             get_next_payment_date (datetime): returns next payment date for the subscription
     """
+
     owner: str
     name: str
     frequency: str
@@ -27,13 +28,15 @@ class Subscription:
     comment: str
 
     def __str__(self):
-        return f'({self.owner}, ' \
-               f'{self.name}, ' \
-               f'{self.frequency}, ' \
-               f'{self.start_date}, ' \
-               f'{self.price}, ' \
-               f'{self.currency}, ' \
-               f'{self.comment})'
+        return (
+            f"({self.owner}, "
+            f"{self.name}, "
+            f"{self.frequency}, "
+            f"{self.start_date}, "
+            f"{self.price}, "
+            f"{self.currency}, "
+            f"{self.comment})"
+        )
 
     def get_next_payment_date(self) -> datetime:
         """Return next payment day, that is bigger or equal than today
@@ -44,10 +47,34 @@ class Subscription:
         # dict contains sequence of dates since start_date until today+selected period.
         # for example, if today = Jun 03,2020 and start_date = Jun 01, 2020 and frequency = 'DAILY',
         # periods[daily] contains Jun 01, 2020; Jun 02,2020; Jun 03, 2020, Jun 04, 2020 in datetime format
-        periods = dict(daily=list(rrule(DAILY, dtstart=self.start_date, until=today + relativedelta(days=1))),
-                       weekly=list(rrule(WEEKLY, dtstart=self.start_date, until=today + relativedelta(weeks=1))),
-                       monthly=list(rrule(MONTHLY, dtstart=self.start_date, until=today + relativedelta(months=1))),
-                       yearly=list(rrule(YEARLY, dtstart=self.start_date, until=today + relativedelta(years=1))))
+        periods = dict(
+            daily=list(
+                rrule(
+                    DAILY, dtstart=self.start_date, until=today + relativedelta(days=1)
+                )
+            ),
+            weekly=list(
+                rrule(
+                    WEEKLY,
+                    dtstart=self.start_date,
+                    until=today + relativedelta(weeks=1),
+                )
+            ),
+            monthly=list(
+                rrule(
+                    MONTHLY,
+                    dtstart=self.start_date,
+                    until=today + relativedelta(months=1),
+                )
+            ),
+            yearly=list(
+                rrule(
+                    YEARLY,
+                    dtstart=self.start_date,
+                    until=today + relativedelta(years=1),
+                )
+            ),
+        )
         # if payment date is today, return today, else - next payment day in the future
         if periods[self.frequency][-2].date() == today:
             return today
