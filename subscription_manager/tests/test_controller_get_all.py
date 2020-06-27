@@ -1,11 +1,11 @@
-from datetime import date, datetime
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
 
 from subscription_manager.controller import Controller
 from subscription_manager.dbhelper import DBHelper
-from subscription_manager.exceptions import WrongTypeException, SubscriptionException
+from subscription_manager.exceptions import SubscriptionException
 from subscription_manager.subscription import Subscription
 
 
@@ -19,7 +19,7 @@ def subscriptions_db_list():
             "name": "Youtube Music",
             "owner": "Kevin",
             "price": 8.3,
-            "start_date": datetime(2019, 5, 11, 0, 0),
+            "start_date": date(2019, 5, 11),
         },
         {
             "comment": "Generation date: 23/06/2020, 10:46:41",
@@ -28,7 +28,7 @@ def subscriptions_db_list():
             "name": "Sky Store",
             "owner": "Mary",
             "price": 12.97,
-            "start_date": datetime(2019, 4, 13, 0, 0),
+            "start_date": date(2019, 4, 13),
         },
         {
             "comment": "Generation date: 23/06/2020, 10:47:36",
@@ -37,7 +37,7 @@ def subscriptions_db_list():
             "name": "Spotify",
             "owner": "Robin",
             "price": 30.23,
-            "start_date": datetime(2019, 10, 19, 0, 0),
+            "start_date": date(2019, 10, 19),
         },
     ]
 
@@ -88,7 +88,7 @@ def controller(mock_dbhelper: DBHelper) -> Controller:
     return Controller(database)
 
 
-@pytest.mark.parametrize("owner", ["Lena", "", None])
+@pytest.mark.parametrize("owner", ["Lena", None])
 def test_get_all_subscriptions(controller: Controller, owner: str):
     """Check that Controller returned correct list of Subscription objects:
         - No _id specified in each subscription
@@ -109,9 +109,17 @@ def test_get_all_subscriptions_wrong_type(controller: Controller, owner):
     assert expected_exc_msg == str(exc.value)
 
 
+def test_get_all_subscriptions_wrong_value(controller: Controller):
+    """Check that Controller raises exception in case of empty owner field"""
+    with pytest.raises(SubscriptionException) as exc:
+        result = controller.get_subscriptions_list("")
+        assert result == subscriptions_obj_list
+    expected_exc_msg = "Owner field length should be more than one"
+    assert expected_exc_msg == str(exc.value)
+
+
 def test_get_next_payment_date(controller: Controller):
-    """Check that client can get next_payment_date attribute
-    for subscriptions in subscription list"""
+    """Check that client can get next_payment_date attribute for subscriptions in subscription list"""
     subscriptions_list = controller.get_subscriptions_list()
     assert type(subscriptions_list[0]) == Subscription
     for subs in subscriptions_list:

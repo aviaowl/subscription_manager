@@ -41,7 +41,7 @@ class Controller:
         return result_id
 
     def edit_subscription(
-        self, subscription_id: int, subscription_changes: dict
+            self, subscription_id: int, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
@@ -77,19 +77,19 @@ class Controller:
         Raises:
             SubsNotFoundException: when subscription with this id doesn't exist in database
         """
-        if type(subscription_name) is not str:
+        if not isinstance(subscription_name, str):
             raise WrongTypeException(
-                f"Found wrong field 'subscription_name' type, expected: <str>, received: {type(subscription_name), subscription_name}"
+                f"Found wrong field 'subscription_name' type, expected: <str>, "
+                f"received: {type(subscription_name), subscription_name}"
             )
         if len(subscription_name) < 1:
             raise InvalidValueException(
                 "Subscription name length should be more than one"
             )
         received_subscription: dict = self.dbhelper.get_subscription(subscription_name)
-        received_subscription.update({"start_date": received_subscription["start_date"].date()})
         return Subscription(**received_subscription)
 
-    def get_subscriptions_list(self, owner=None) -> List[Subscription]:
+    def get_subscriptions_list(self, owner: str = None) -> List[Subscription]:
         """
         Return list of subscriptions
         Args:
@@ -97,15 +97,12 @@ class Controller:
         Returns:
             List[Subscription]: list of all subscriptions or all user's subscription if owner is specified
         """
-        if type(owner) is not str and owner is not None:
+        if not isinstance(owner, str) and owner is not None:
             raise WrongTypeException(
                 f"Found wrong owner name's type, expected: <str>, received: {type(owner), owner}"
             )
         if owner == "":
-            owner = None
+            raise InvalidValueException("Owner field length should be more than one")
         subscription_list = self.dbhelper.get_all_subscriptions(owner)
         # Convert start_date type from datetime to date, convert every dict to Subscription
-        for i, sub_dict in enumerate(subscription_list):
-            sub_dict.update({"start_date": sub_dict["start_date"].date()})
-            subscription_list[i] = Subscription(**sub_dict)
-        return subscription_list
+        return [Subscription(**subscription) for subscription in subscription_list]

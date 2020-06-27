@@ -18,7 +18,7 @@ def mock_dbhelper() -> DBHelper:
         "owner": "Mary",
         "name": "Sky Store",
         "frequency": "monthly",
-        "start_date": datetime(2019, 4, 13),
+        "start_date": date(2019, 4, 13),
         "price": 12.97,
         "currency": "CNY",
         "comment": "Generation date: 23/06/2020, 10:46:41",
