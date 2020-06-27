@@ -86,7 +86,8 @@ class Controller:
                 "Subscription name length should be more than one"
             )
         received_subscription: dict = self.dbhelper.get_subscription(subscription_name)
-        return utils.dict_to_subscription(received_subscription)
+        received_subscription.update({"start_date": received_subscription["start_date"].date()})
+        return Subscription(**received_subscription)
 
     def get_subscriptions_list(self, owner=None) -> List[Subscription]:
         """
