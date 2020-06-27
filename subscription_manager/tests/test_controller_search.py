@@ -15,11 +15,10 @@ def mock_dbhelper() -> DBHelper:
     """Returns mock for DBHelper for get_subscription by name from database"""
     mock = DBHelper
     return_dict = {
-        "_id": ObjectId("5ef1cf8116648435dcdf3b2d"),
         "owner": "Mary",
         "name": "Sky Store",
         "frequency": "monthly",
-        "start_date": datetime(2019, 4, 13),
+        "start_date": date(2019, 4, 13),
         "price": 12.97,
         "currency": "CNY",
         "comment": "Generation date: 23/06/2020, 10:46:41",
@@ -83,8 +82,8 @@ def test_get_subscription_by_wrong_name_type(
     with pytest.raises(SubscriptionException) as exc:
         controller.get_subscription_by_name(subscription_name)
     expected_err_msg = (
-        f"Found wrong field 'subscription_name' type, expected:<str>, "
-        f"received:({type(subscription_name)}, {subscription_name})"
+        f"Found wrong field 'subscription_name' type, expected: <str>, "
+        f"received: ({type(subscription_name)}, {subscription_name})"
     )
     assert str(exc.value) == expected_err_msg
 
