@@ -38,6 +38,10 @@ class Subscription:
             f"{self.comment})"
         )
 
+    @property
+    def next_payment_date(self):
+        return self.get_next_payment_date()
+
     def get_next_payment_date(self) -> datetime:
         """Return next payment day, that is bigger or equal than today
             Returns:

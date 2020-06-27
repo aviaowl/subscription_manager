@@ -79,25 +79,32 @@ class Controller:
         """
         if type(subscription_name) is not str:
             raise WrongTypeException(
-                f"Found wrong field 'subscription_name' type, expected:<str>, received:{type(subscription_name), subscription_name}"
+                f"Found wrong field 'subscription_name' type, expected: <str>, received: {type(subscription_name), subscription_name}"
             )
         if len(subscription_name) < 1:
             raise InvalidValueException(
                 "Subscription name length should be more than one"
             )
-        recieved_subscription: dict = self.dbhelper.get_subscription(subscription_name)
-        recieved_subscription.pop("_id")
-        new_date_type = {"start_date": recieved_subscription["start_date"].date()}
-        recieved_subscription.update(new_date_type)
-        return Subscription(**recieved_subscription)
+        received_subscription: dict = self.dbhelper.get_subscription(subscription_name)
+        return utils.dict_to_subscription(received_subscription)
 
-
-def get_subscriptions_list(self, owner=None) -> List[dict]:
-    """
-    Return list of subscriptions
-    Args:
-        owner (str): not mandatory, if not None returns all subscriptions of specified owner
-    Returns:
-        List[dict]:
-    """
-    pass
+    def get_subscriptions_list(self, owner=None) -> List[Subscription]:
+        """
+        Return list of subscriptions
+        Args:
+            owner (str): not mandatory, if not None returns all subscriptions of specified owner
+        Returns:
+            List[Subscription]: list of all subscriptions or all user's subscription if owner is specified
+        """
+        if type(owner) is not str and owner is not None:
+            raise WrongTypeException(
+                f"Found wrong owner name's type, expected: <str>, received: {type(owner), owner}"
+            )
+        if owner == "":
+            owner = None
+        subscription_list = self.dbhelper.get_all_subscriptions(owner)
+        # Convert start_date type from datetime to date, convert every dict to Subscription
+        for i, sub_dict in enumerate(subscription_list):
+            sub_dict.update({"start_date": sub_dict["start_date"].date()})
+            subscription_list[i] = Subscription(**sub_dict)
+        return subscription_list
