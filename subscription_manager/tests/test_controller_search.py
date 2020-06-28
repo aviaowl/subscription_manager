@@ -1,12 +1,12 @@
-from datetime import date
+from datetime import datetime, date
 from unittest.mock import MagicMock
 
 import pytest
+from bson import ObjectId
 
-from subscription_manager.common.constants import *
-from subscription_manager.common.exceptions import *
 from subscription_manager.controller import Controller
 from subscription_manager.dbhelper import DBHelper
+from subscription_manager.exceptions import *
 from subscription_manager.subscription import Subscription
 
 
@@ -44,6 +44,13 @@ def controller_subs_not_found(mock_dbhelper_not_found: DBHelper) -> Controller:
     return Controller(database)
 
 
+@pytest.fixture
+def controller(mock_dbhelper: DBHelper) -> Controller:
+    """Returns Controller class instance"""
+    database = mock_dbhelper
+    return Controller(database)
+
+
 def test_get_subscription_by_name(controller: Controller):
     """Check correct format of found subscription:
         _id from database is not in the dict
@@ -74,17 +81,18 @@ def test_get_subscription_by_wrong_name_type(
     """Check search with subscription_name wrong type"""
     with pytest.raises(SubscriptionException) as exc:
         controller.get_subscription_by_name(subscription_name)
-    expected_exc_msg = WRONG_TYPE_MSG.format(
-        expected=str, recieved_type=type(subscription_name), field=subscription_name
+    expected_err_msg = (
+        f"Found wrong field 'subscription_name' type, expected: <str>, "
+        f"received: ({type(subscription_name)}, {subscription_name})"
     )
-    assert str(exc.value) == expected_exc_msg
+    assert str(exc.value) == expected_err_msg
 
 
 def test_get_subscription_by_empty_name(controller: Controller):
     """Check correct behaviour in case of empty subscription_name"""
     with pytest.raises(InvalidValueException) as exc:
         controller.get_subscription_by_name("")
-    expected_err_msg = "Field length should be more than one"
+    expected_err_msg = "Subscription name length should be more than one"
     assert str(exc.value) == expected_err_msg
 
 

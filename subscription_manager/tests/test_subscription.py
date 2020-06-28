@@ -1,9 +1,8 @@
-from datetime import date
-
 import pytest
-from dateutil.relativedelta import relativedelta
-
+import subscription_manager.utils as utils
 from subscription_manager.subscription import Subscription
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 today = date.today()
 
@@ -20,6 +19,12 @@ def subscription() -> Subscription:
         currency="GBP",
         comment="Prime membership for faster delivery",
     )
+
+
+@pytest.fixture
+def generated_subscription() -> dict:
+    """Return generated subscription with correct fields"""
+    return utils.subscription_generator()
 
 
 def test_subscription_representation(subscription):

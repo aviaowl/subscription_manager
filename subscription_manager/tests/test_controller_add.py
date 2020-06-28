@@ -1,15 +1,18 @@
-from datetime import datetime
-from unittest.mock import MagicMock
-
 import pytest
-from bson.objectid import ObjectId
+from subscription_manager.exceptions import SubscriptionException
+import subscription_manager.utils as utils
 from dateutil.relativedelta import relativedelta
-
-import subscription_manager.common.utils as utils
-from subscription_manager.common.constants import *
-from subscription_manager.common.exceptions import SubscriptionException
 from subscription_manager.controller import Controller
 from subscription_manager.dbhelper import DBHelper
+from bson.objectid import ObjectId
+from unittest.mock import MagicMock
+from datetime import datetime
+
+
+@pytest.fixture
+def subscription_dict() -> dict:
+    """Returns generated random subscription with correct fields"""
+    return utils.subscription_generator()
 
 
 @pytest.fixture
@@ -20,12 +23,19 @@ def mock_dbhelper() -> DBHelper:
     return mock
 
 
+@pytest.fixture
+def controller(mock_dbhelper: DBHelper) -> Controller:
+    """Returns Controller class instance"""
+    database = mock_dbhelper
+    return Controller(database)
+
+
 @pytest.mark.parametrize(
-    "generated_subscription", [utils.subscription_generator() for _ in range(5)]
+    "subscription_dict", [utils.subscription_generator() for _ in range(5)]
 )
-def test_add_subscription(generated_subscription: dict, controller: Controller):
+def test_add_subscription(subscription_dict: dict, controller: Controller):
     """Check successful subscription addition with correct parameters"""
-    result = controller.add_subscription(generated_subscription)
+    result = controller.add_subscription(subscription_dict)
     assert type(result) == ObjectId
 
 
@@ -34,18 +44,18 @@ def test_add_subscription(generated_subscription: dict, controller: Controller):
     ["owner", "name", "frequency", "start_date", "price", "currency", "comment"],
 )
 def test_add_subscription_with_none_fields(
-    controller: Controller, generated_subscription: dict, paramNone: str
+    controller: Controller, subscription_dict: dict, paramNone: str
 ):
     """Check subscribe addition with one of the field equals None"""
-    sub_dict = generated_subscription.copy()
+    sub_dict = subscription_dict.copy()
     sub_dict[paramNone] = None
     with pytest.raises(SubscriptionException) as exc:
         assert controller.add_subscription(sub_dict)
     # Receive expected type from valid subscription instance by field name
-    expected_exc_msg = WRONG_TYPE_MSG.format(
-        expected=type(generated_subscription[paramNone]),
-        recieved_type=type(None),
-        field=None,
+    expected_exc_msg = (
+        f"Found wrong field '{paramNone}' type, "
+        f"expected:{type(subscription_dict[paramNone])}, received:(<class "
+        "'NoneType'>, None)"
     )
     assert str(exc.value) == expected_exc_msg
 
@@ -69,18 +79,17 @@ def test_add_subscription_empty(controller: Controller):
     ],
 )
 def test_add_subscription_wrong_types(
-    generated_subscription: dict, controller: Controller, field: str, value
+    subscription_dict: dict, controller: Controller, field: str, value
 ):
     """Check that Controller will not add subscription with wrong field types"""
-    sub_dict = generated_subscription.copy()
+    sub_dict = subscription_dict.copy()
     sub_dict[field] = value
     with pytest.raises(SubscriptionException) as exc:
         assert controller.add_subscription(sub_dict)
     # Receive expected type from valid subscription instance by field name
-    expected_exc_msg = WRONG_TYPE_MSG.format(
-        expected=type(generated_subscription[field]),
-        recieved_type=type(value),
-        field=value,
+    expected_exc_msg = (
+        f"Found wrong field '{field}' type, "
+        f"expected:{type(subscription_dict[field])}, received:({type(value)}, {value})"
     )
     assert str(exc.value) == expected_exc_msg
 
@@ -95,10 +104,10 @@ def test_add_subscription_wrong_types(
     ],
 )
 def test_add_subscription_wrong_values(
-    generated_subscription: dict, controller: Controller, field: str, value
+    subscription_dict: dict, controller: Controller, field: str, value
 ):
     """Check that Controller will not add subscription with wrong field values"""
-    sub_dict = generated_subscription.copy()
+    sub_dict = subscription_dict.copy()
     sub_dict[field] = value
     with pytest.raises(SubscriptionException):
         assert controller.add_subscription(sub_dict)
