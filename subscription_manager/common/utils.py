@@ -1,9 +1,10 @@
 from dataclasses import fields
-from random import choice, uniform, randint
 from datetime import datetime, date
-from subscription_manager.exceptions import *
+from random import choice, uniform, randint
+
+from subscription_manager.common.constants import *
+from subscription_manager.common.exceptions import *
 from subscription_manager.subscription import Subscription
-import subscription_manager.constants as const
 
 
 def subscription_generator() -> dict:
@@ -34,10 +35,10 @@ def subscription_generator() -> dict:
     return dict(
         owner=choice(names),
         name=choice(subscription_names),
-        frequency=choice(const.FREQUENCIES),
+        frequency=choice(FREQUENCIES),
         start_date=random_day,
         price=round(uniform(1.99, 49.99), 2),
-        currency=choice(const.CURRENCIES),
+        currency=choice(CURRENCIES),
         comment="Generation date: " + datetime.today().strftime("%d/%m/%Y, %H:%M:%S"),
     )
 
@@ -65,32 +66,56 @@ def create_subscription(**params) -> Subscription:
     # Check that there is no missed fields in the subscription
     expected_fields = {field.name: field.type for field in fields(Subscription)}
     if params.keys() != expected_fields.keys():
-        raise MissingFieldsException(
-            "Some fields in the taken subscription are missing"
-        )
+        raise MissingFieldsException(MISSING_FIELDS_MSG)
 
     # Check that types of all fields are correct
     for key, value in params.items():
         if type(value) != expected_fields[key]:
             raise WrongTypeException(
-                f"Found wrong field '{key}' type, expected:{expected_fields[key]}, received:{type(value), value}"
+                WRONG_TYPE_MSG.format(
+                    expected=expected_fields[key],
+                    recieved_type=type(value),
+                    field=value,
+                )
             )
 
     # Check that given subscription currency is supported
-    if params["currency"] not in const.CURRENCIES:
+    if params["currency"] not in CURRENCIES:
         raise InvalidValueException(
-            f"Unexpected currency: {params['frequency']}, supported currencies: ",
-            " ".join(const.CURRENCIES),
+            UNEXPECTED_CURRENCY_MSG.format(currency=params["currency"])
         )
 
     # Check that given subscription frequency is supported
-    if params["frequency"] not in const.FREQUENCIES:
+    if params["frequency"] not in FREQUENCIES:
         raise InvalidValueException(
-            f"Unexpected frequency: {params['frequency']}, supported frequencies: ",
-            " ".join(const.FREQUENCIES),
+            UNEXPECTED_FREQUENCY_MSG.format(frequency=params["frequency"])
         )
 
     # Check that start_date is less than today
     if params["start_date"] > date.today():
-        raise InvalidValueException("Start dates in the future are not supported")
+        raise InvalidValueException(FUTURE_START_DATE_MSG)
     return Subscription(**params)
+
+
+def validate_str_field(field: str, none_allowed: bool = False):
+    """
+    Args:
+        field (str): field to validate
+        none_allowed (bool): If True then None value of the field is allowed, else raise exception
+    Returns:
+        None
+    Raises:
+        WrongTypeException: If field type is not string and not None (depends on none_allowed)
+        InvalidValueException: If field is empty
+    """
+    if not isinstance(field, str) and field is not None:
+        raise WrongTypeException(
+            WRONG_TYPE_MSG.format(expected=str, recieved_type=type(field), field=field)
+        )
+    if not none_allowed and field is None:
+        print(none_allowed, field)
+        raise WrongTypeException(
+            WRONG_TYPE_MSG.format(expected=str, recieved_type=type(field), field=field)
+        )
+    if field == "":
+        raise InvalidValueException(EMPTY_FIELD_MSG)

@@ -3,9 +3,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from subscription_manager.common.constants import *
+from subscription_manager.common.exceptions import SubscriptionException
 from subscription_manager.controller import Controller
 from subscription_manager.dbhelper import DBHelper
-from subscription_manager.exceptions import SubscriptionException
 from subscription_manager.subscription import Subscription
 
 
@@ -81,13 +82,6 @@ def mock_dbhelper(subscriptions_db_list) -> DBHelper:
     return mock
 
 
-@pytest.fixture
-def controller(mock_dbhelper: DBHelper) -> Controller:
-    """Returns Controller class instance"""
-    database = mock_dbhelper
-    return Controller(database)
-
-
 @pytest.mark.parametrize("owner", ["Lena", None])
 def test_get_all_subscriptions(controller: Controller, owner: str):
     """Check that Controller returned correct list of Subscription objects:
@@ -105,7 +99,9 @@ def test_get_all_subscriptions_wrong_type(controller: Controller, owner):
     with pytest.raises(SubscriptionException) as exc:
         result = controller.get_subscriptions_list(owner)
         assert result == subscriptions_obj_list
-    expected_exc_msg = f"Found wrong owner name's type, expected: <str>, received: {type(owner), owner}"
+    expected_exc_msg = WRONG_TYPE_MSG.format(
+        expected=str, recieved_type=type(owner), field=owner
+    )
     assert expected_exc_msg == str(exc.value)
 
 
@@ -114,7 +110,7 @@ def test_get_all_subscriptions_wrong_value(controller: Controller):
     with pytest.raises(SubscriptionException) as exc:
         result = controller.get_subscriptions_list("")
         assert result == subscriptions_obj_list
-    expected_exc_msg = "Owner field length should be more than one"
+    expected_exc_msg = "Field length should be more than one"
     assert expected_exc_msg == str(exc.value)
 
 
