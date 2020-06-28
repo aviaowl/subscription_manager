@@ -1,12 +1,9 @@
-import subscription_manager.utils as utils
+from typing import List
+
+import subscription_manager.common.utils as utils
+from subscription_manager.common.exceptions import SubscriptionException
 from subscription_manager.dbhelper import DBHelper
 from subscription_manager.subscription import Subscription
-from subscription_manager.utils import SubscriptionException
-from subscription_manager.exceptions import (
-    WrongTypeException,
-    InvalidValueException,
-)
-from typing import List
 
 
 class Controller:
@@ -35,13 +32,13 @@ class Controller:
         """
         try:
             subscription_obj = utils.create_subscription(**subscription_dict)
-        except SubscriptionException as exc:
-            raise exc
+        except SubscriptionException:
+            raise
         result_id = self.dbhelper.add_subscription(subscription_obj)
         return result_id
 
     def edit_subscription(
-            self, subscription_id: int, subscription_changes: dict
+        self, subscription_id: int, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
@@ -57,17 +54,22 @@ class Controller:
         """
         pass
 
-    def delete_subscription(self, subscription_id: int) -> int:
+    def delete_subscription(self, subscription_name: str) -> int:
         """
-        Delete subscription by identifier
+        Delete subscription by name
         Args:
-            subscription_id (int): identifier of subscription to delete
+            subscription_name (str): identifier of subscription to delete
         Returns:
-            int: identifier of deleted subscription
-        Raises:
-            SubsNotFoundException: when subscription with this id doesn't exist in database
+            int: count of deleted subscriptions
         """
-        pass
+        try:
+            utils.validate_str_field(field=subscription_name)
+        except SubscriptionException:
+            raise
+        deleted_subscriptions_count = self.dbhelper.delete_subscription(
+            subscription_name
+        )
+        return deleted_subscriptions_count
 
     def get_subscription_by_name(self, subscription_name: str) -> Subscription:
         """
@@ -77,15 +79,10 @@ class Controller:
         Raises:
             SubsNotFoundException: when subscription with this id doesn't exist in database
         """
-        if not isinstance(subscription_name, str):
-            raise WrongTypeException(
-                f"Found wrong field 'subscription_name' type, expected: <str>, "
-                f"received: {type(subscription_name), subscription_name}"
-            )
-        if len(subscription_name) < 1:
-            raise InvalidValueException(
-                "Subscription name length should be more than one"
-            )
+        try:
+            utils.validate_str_field(field=subscription_name)
+        except SubscriptionException:
+            raise
         received_subscription: dict = self.dbhelper.get_subscription(subscription_name)
         return Subscription(**received_subscription)
 
@@ -97,12 +94,10 @@ class Controller:
         Returns:
             List[Subscription]: list of all subscriptions or all user's subscription if owner is specified
         """
-        if not isinstance(owner, str) and owner is not None:
-            raise WrongTypeException(
-                f"Found wrong owner name's type, expected: <str>, received: {type(owner), owner}"
-            )
-        if owner == "":
-            raise InvalidValueException("Owner field length should be more than one")
+        try:
+            utils.validate_str_field(field=owner, none_allowed=True)
+        except SubscriptionException:
+            raise
         subscription_list = self.dbhelper.get_all_subscriptions(owner)
         # Convert start_date type from datetime to date, convert every dict to Subscription
         return [Subscription(**subscription) for subscription in subscription_list]
