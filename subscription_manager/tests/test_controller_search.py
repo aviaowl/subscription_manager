@@ -2,7 +2,6 @@ from datetime import datetime, date
 from unittest.mock import MagicMock
 
 import pytest
-from bson import ObjectId
 
 from subscription_manager.controller import Controller
 from subscription_manager.dbhelper import DBHelper
