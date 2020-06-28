@@ -38,21 +38,33 @@ class Controller:
         return result_id
 
     def edit_subscription(
-        self, subscription_id: int, subscription_changes: dict
+        self, subscription_name: str, subscription_changes: dict
     ) -> int:
         """
         Validate changes and edit subscription in database
         Args:
-            subscription_id (int):
-            subscription_changes (dict):
+            subscription_name (str): name of subscription to change
+            subscription_changes (dict):  dict contains changes for subscription
         Examples:
-            id=1,
+            name="Youtube Music",
             {"price": 8.99,
              "comment": 'Price has been increased since Jun, 21'}
         Returns:
-            id (int): identifier of changed subscription
+            int: count of changed subscriptions
         """
-        pass
+        try:
+            utils.validate_str_field(field=subscription_name)
+            subscription_to_edit = self.get_subscription_by_name(subscription_name)
+        except SubscriptionException:
+            raise
+        try:
+            subscription_to_change = utils.validate_subscription_changes(
+                subscription_to_edit, subscription_changes
+            )
+        except SubscriptionException:
+            raise
+        result = self.dbhelper.update_subscription(subscription_to_change)
+        return result
 
     def delete_subscription(self, subscription_name: str) -> int:
         """

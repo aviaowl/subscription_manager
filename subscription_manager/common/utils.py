@@ -1,4 +1,4 @@
-from dataclasses import fields
+from dataclasses import fields, asdict
 from datetime import datetime, date
 from random import choice, uniform, randint
 
@@ -119,3 +119,21 @@ def validate_str_field(field: str, none_allowed: bool = False):
         )
     if field == "":
         raise InvalidValueException(EMPTY_FIELD_MSG)
+
+
+def validate_subscription_changes(
+    subscription: Subscription, changes: dict
+) -> Subscription:
+    """
+    Validate changes and return updated Subscription object
+    Args:
+        subscription (Subscription): subscription object to change
+        changes (dict): dict contains subscription changes
+    Returns:
+        Subscription: updated Subscription object to send to to Database
+    """
+    updated_subscription = asdict(subscription)
+    for key, value in changes.items():
+        updated_subscription.update({key: value})
+    result = create_subscription(**updated_subscription)
+    return result
