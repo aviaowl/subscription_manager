@@ -32,8 +32,8 @@ class Controller:
         """
         try:
             subscription_obj = utils.create_subscription(**subscription_dict)
-        except SubscriptionException as exc:
-            raise exc
+        except SubscriptionException:
+            raise
         result_id = self.dbhelper.add_subscription(subscription_obj)
         return result_id
 
@@ -64,8 +64,8 @@ class Controller:
         """
         try:
             utils.validate_str_field(field=subscription_name)
-        except SubscriptionException as exc:
-            raise exc
+        except SubscriptionException:
+            raise
         deleted_subscriptions_count = self.dbhelper.delete_subscription(
             subscription_name
         )
@@ -81,8 +81,8 @@ class Controller:
         """
         try:
             utils.validate_str_field(field=subscription_name)
-        except SubscriptionException as exc:
-            raise exc
+        except SubscriptionException:
+            raise
         received_subscription: dict = self.dbhelper.get_subscription(subscription_name)
         return Subscription(**received_subscription)
 
@@ -96,8 +96,8 @@ class Controller:
         """
         try:
             utils.validate_str_field(field=owner, none_allowed=True)
-        except SubscriptionException as exc:
-            raise exc
+        except SubscriptionException:
+            raise
         subscription_list = self.dbhelper.get_all_subscriptions(owner)
         # Convert start_date type from datetime to date, convert every dict to Subscription
         return [Subscription(**subscription) for subscription in subscription_list]
