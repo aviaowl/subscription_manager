@@ -13,7 +13,7 @@ class Subscription:
             name (str): name of the subscription, e.g. 'Spotify music'
             frequency (str): payment period for subscription from the list: daily, weekly, monthly, yearly
             start_date (date): date when subscription started
-            price (str): amount of money needed to pay for subscription per one payment period
+            price (float): amount of money needed to pay for subscription per one payment period
             currency (str): currency of payment
             comment (str): not-mandatory comment for subscription
         Methods:
