@@ -55,9 +55,6 @@ class Controller:
         try:
             utils.validate_str_field(field=subscription_name)
             subscription_to_edit = self.get_subscription_by_name(subscription_name)
-        except SubscriptionException:
-            raise
-        try:
             subscription_to_change = utils.validate_subscription_changes(
                 subscription_to_edit, subscription_changes
             )

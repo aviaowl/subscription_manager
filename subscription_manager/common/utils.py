@@ -132,8 +132,7 @@ def validate_subscription_changes(
     Returns:
         Subscription: updated Subscription object to send to to Database
     """
-    updated_subscription = asdict(subscription)
-    for key, value in changes.items():
-        updated_subscription.update({key: value})
+    updated_subscription: dict = asdict(subscription)
+    updated_subscription.update(changes)
     result = create_subscription(**updated_subscription)
     return result
